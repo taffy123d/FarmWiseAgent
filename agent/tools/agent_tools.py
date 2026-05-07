@@ -21,9 +21,9 @@ ddsearch = DuckDuckGoSearchRun()
 rag = RagSummarizeService()
 
 @tool(description='''
-   - 核心能力：入参为query（检索词），从向量库精准检索扫地/扫拖机器人的常用问答、专业使用建议、故障处理、环境适配、选购指南、维护保养等相关资料；
-   - 出参：字符串类型的专业资料内容，包含与检索词匹配的精准解答、建议及知识点；
-   - 使用场景：当回答用户问题需要补充扫地/扫拖机器人的专业信息、行业知识，现有常识无法精准解答时调用；实时环境适配场景下，必须将已获取的完整天气结果注入query，再发起调用；
+   - 核心能力：入参为query（检索词），从向量库检索 农作物 专业知识，收割播种建议，病虫害防治等相关专业知识
+   - 出参：字符串类型的专业资料内容，包含与检索词匹配的解答、建议及知识点；
+   - 使用场景：当回答用户问题需要补充 农作物 的专业信息、现有常识无法精准解答时调用；
    - 调用规则：必须传入纯文本字符串类型的query参数，参数为贴合用户问题的核心检索词。
 ''')
 def rag_summarize(query:str)->str:
@@ -80,29 +80,7 @@ def get_current_date() -> str:
 external_data = {}
 
 def generate_external_data():
-  """
-  {
-    "user_id1":{
-      "month1" : {"特征":xxx,"效率":xxx,...}   
-      "month2" : {"特征":xxx,"效率":xxx,...}   
-      "month3" : {"特征":xxx,"效率":xxx,...}   
-      ...
-    },
-    "user_id2":{
-      "month1" : {"特征":xxx,"效率":xxx,...}   
-      "month2" : {"特征":xxx,"效率":xxx,...}   
-      "month3" : {"特征":xxx,"效率":xxx,...}   
-      ...
-    },    
-    "user_id3":{
-      "month1" : {"特征":xxx,"效率":xxx,...}   
-      "month2" : {"特征":xxx,"效率":xxx,...}   
-      "month3" : {"特征":xxx,"效率":xxx,...}   
-      ...
-    },
-    ...
-  }
-  """
+
   if not external_data:
     external_data_path = get_abs_path(agent_conf['external_data_path'])
     if not os.path.exists(external_data_path):
@@ -111,18 +89,18 @@ def generate_external_data():
       for line in file.readlines()[1:]:
         arr:list[str] = line.strip().split(',')
         user_id:str = arr[0].replace('"','')
-        feather:str = arr[1].replace('"','')
-        efficiency:str = arr[2].replace('"','')
-        consumables:str = arr[3].replace('"','')
-        comparison:str = arr[4].replace('"','')
+        location:str = arr[1].replace('"','')
+        weather:str = arr[2].replace('"','')
+        kind:str = arr[3].replace('"','')
+        cmt:str = arr[4].replace('"','')
         time:str = arr[5].replace('"','')
         if user_id not in external_data:
           external_data[user_id] = {}
         external_data[user_id][time]={
-          "特征":feather,
-          "效率":efficiency,
-          "耗材":consumables,
-          "对比":comparison
+          "地理位置":location,
+          "当日天气及气温":weather,
+          "农作物类别":kind,
+          "建议":cmt
         }
 
 class fetch_external_data_Input(BaseModel):
@@ -131,9 +109,9 @@ class fetch_external_data_Input(BaseModel):
 
 @tool(
       description='''
-    从外部系统中检索指定用户在指定月份(年月)的扫地/扫拖机器人完整使用记录,以字符串形式返回,若未检索到则返回空字符串
-   - 核心能力：入参为user_id（用户ID）和month（月份），检索指定用户在指定月份的扫地/扫拖机器人完整使用记录；
-   - 出参：字符串类型的结构化使用记录，包含清洁效率、耗材状态、使用对比等核心报告数据；
+    从外部系统中检索指定用户在指定月份(年月)的 农作物收割播种建议 记录,以字符串形式返回,若未检索到则返回空字符串
+   - 核心能力：入参为user_id（用户ID）和month（月份），检索指定用户在指定月份的完整记录；
+   - 出参：字符串类型的结构化使用记录，包含["用户ID","地理位置","当日天气及气温","农作物类别","建议","时间"] 等核心报告数据；
    - 使用场景：当需要为用户生成报告时，如未知用户ID或月份信息，可先通过get_user_id/get_current_month或用户指定获取入参，再调用此工具；
    - 调用规则：必须同时传入纯文本字符串类型的user_id和month参数，user_id为数字字符串，month严格遵循"YYYY-MM"格式。
     '''
@@ -154,10 +132,10 @@ def fetch_external_data(user_id:str , month:str):
     无入参无返回值,调用后触发中间件自动为报告生成的场景动态注入上下文信息,为后续切换提示词提通上下文信息
   - 核心能力：无入参，调用后触发中间件自动为报告生成场景动态注入上下文信息，为后续提示词切换提供上下文支撑；
    - 出参：无返回值，仅完成上下文注入的底层操作；
-   - 使用场景：仅当明确识别出用户核心意图为「生成/查询个人使用报告」（如“生成我的6月使用报告”“查一下我的机器人使用记录”）时，优先调用此工具；非报告生成场景严禁调用；
+   - 使用场景：仅当明确识别出用户核心意图为「生成/查询个人使用报告」（如“生成我的6月使用报告”，“查一下我的使用记录”）时，优先调用此工具；非报告生成场景严禁调用；
    - 调用规则：
      1. 无需传入任何参数，直接触发调用即可；
-     2. 禁用场景：用户仅咨询使用问题、故障排查、天气适配等非报告类需求时，绝对不调用此工具。    
+     2. 禁用场景：用户仅咨询非报告类需求时，绝对不调用此工具。    
   ''')
 def fill_context_for_report():
   logger.info(f'[fill_context_for_report]已调用')

@@ -42,5 +42,5 @@ class RagSummarizeService(object):
 
 if __name__ == '__main__':
   rags = RagSummarizeService()
-  s = rags.rag_summarize('小户型适合哪些扫地机器人')
+  s = rags.rag_summarize('华南地区5月播种小麦 建议 气候要求 广州')
   print(s)

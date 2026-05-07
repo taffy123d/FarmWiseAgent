@@ -16,3 +16,5 @@ database/chroma_db/
 *.log
 
 .env
+
+CLAUDE.md

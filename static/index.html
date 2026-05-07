@@ -3,21 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智扫通机器人智能客服</title>
+    <title>智慧农业播种收割RAG助手</title>
     <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
 </head>
 <body>
-    <div class="app">
-        <aside class="sidebar">
+    <div class="app" id="app-container">
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2>知识库管理</h2>
+                <h2>config</h2>
             </div>
             <button id="load-btn" class="btn-primary">加载知识库文档</button>
+            <button id="clear-memory-btn" class="btn-primary btn-secondary">清空对话记忆</button>
+            <div class="sidebar-divider"></div>
+            <div class="user-id-section">
+                <label for="user-id-input" class="user-id-label">用户ID (4位数字)</label>
+                <div class="user-id-row">
+                    <input type="text" id="user-id-input" class="user-id-field" maxlength="4" placeholder="1001" value="1001">
+                    <button id="set-user-id-btn" class="btn-primary btn-compact">变更</button>
+                </div>
+                <span id="user-id-status" class="user-id-status"></span>
+            </div>
             <div id="load-status" class="status-text"></div>
         </aside>
+        <button id="sidebar-toggle" class="sidebar-toggle" title="收起侧边栏">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <polyline points="15,18 9,12 15,6"></polyline>
+            </svg>
+        </button>
         <main class="main">
             <header class="main-header">
-                <h1>智扫通机器人智能客服</h1>
+                <h1>智慧农业播种收割RAG助手</h1>
             </header>
             <div class="divider"></div>
             <div id="chat-container" class="chat-container"></div>

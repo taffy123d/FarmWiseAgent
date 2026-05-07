@@ -1,10 +1,18 @@
+const appContainer = document.getElementById('app-container');
 const chatContainer = document.getElementById('chat-container');
 const chatInput = document.getElementById('chat-input');
 const sendBtn = document.getElementById('send-btn');
 const loadBtn = document.getElementById('load-btn');
 const loadStatus = document.getElementById('load-status');
+const sidebarToggle = document.getElementById('sidebar-toggle');
 
 let isLoading = false;
+
+// 侧边栏折叠
+sidebarToggle.addEventListener('click', () => {
+    appContainer.classList.toggle('collapsed');
+    sidebarToggle.title = appContainer.classList.contains('collapsed') ? '展开侧边栏' : '收起侧边栏';
+});
 
 function createMessageElement(role, content) {
     const wrapper = document.createElement('div');
@@ -240,6 +248,69 @@ loadBtn.addEventListener('click', async () => {
         loadStatus.className = 'status-text error';
     } finally {
         loadBtn.disabled = false;
+    }
+});
+
+// 变更用户ID
+const userIdInput = document.getElementById('user-id-input');
+const setUserIdBtn = document.getElementById('set-user-id-btn');
+const userIdStatus = document.getElementById('user-id-status');
+
+// 页面加载时获取当前 user_id
+(async () => {
+    try {
+        const res = await fetch('/api/get-user-id', { method: 'POST' });
+        const data = await res.json();
+        if (data.user_id) userIdInput.value = data.user_id;
+    } catch (e) {}
+})();
+
+setUserIdBtn.addEventListener('click', async () => {
+    const uid = userIdInput.value.trim();
+    if (!/^\d{4}$/.test(uid)) {
+        userIdStatus.textContent = '请输入4位数字';
+        userIdStatus.style.color = '#e74c3c';
+        return;
+    }
+    setUserIdBtn.disabled = true;
+    try {
+        const res = await fetch('/api/set-user-id', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid })
+        });
+        const data = await res.json();
+        userIdStatus.textContent = data.message;
+        userIdStatus.style.color = data.status === 'success' ? '#2ecc71' : '#e74c3c';
+    } catch (e) {
+        userIdStatus.textContent = '请求失败: ' + e.message;
+        userIdStatus.style.color = '#e74c3c';
+    } finally {
+        setUserIdBtn.disabled = false;
+    }
+});
+
+userIdInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') setUserIdBtn.click();
+});
+
+const clearMemoryBtn = document.getElementById('clear-memory-btn');
+clearMemoryBtn.addEventListener('click', async () => {
+    if (clearMemoryBtn.disabled) return;
+    clearMemoryBtn.disabled = true;
+    clearMemoryBtn.textContent = '清空中...';
+    try {
+        const res = await fetch('/api/clear-session', { method: 'POST' });
+        const data = await res.json();
+        loadStatus.textContent = data.message;
+        loadStatus.className = `status-text ${data.status}`;
+        chatContainer.innerHTML = '';
+    } catch (e) {
+        loadStatus.textContent = '清空失败: ' + e.message;
+        loadStatus.className = 'status-text error';
+    } finally {
+        clearMemoryBtn.disabled = false;
+        clearMemoryBtn.textContent = '清空对话记忆';
     }
 });
 
