@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智扫通机器人智能客服</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>知识库管理</h2>
+            </div>
+            <button id="load-btn" class="btn-primary">加载知识库文档</button>
+            <div id="load-status" class="status-text"></div>
+        </aside>
+        <main class="main">
+            <header class="main-header">
+                <h1>智扫通机器人智能客服</h1>
+            </header>
+            <div class="divider"></div>
+            <div id="chat-container" class="chat-container"></div>
+            <div class="input-area">
+                <div class="input-wrapper">
+                    <input type="text" id="chat-input" placeholder="请输入您的问题..." autocomplete="off">
+                    <button id="send-btn" class="send-btn" aria-label="发送">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
