@@ -152,7 +152,7 @@ agtpjt/
 ## 启动服务
 
 ```bash
-# 开发模式（带热重载，默认端口 8000）
+# 开发模式（带热重载，默认端口 8088）
 uv run python -m uvicorn web_app:app --port 8088 --reload
 ```
 
