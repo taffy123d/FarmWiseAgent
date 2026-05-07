@@ -236,4 +236,4 @@ get_user_id → get_current_date（或用户指定月份）→ fill_context_for_
 - 若更换 Embedding 模型，需清空 `database/chroma_db/` 并重新加载知识库
 - 前端 marked.js 通过 CDN 引入（`cdn.jsdelivr.net`），确保网络可访问
 - Windows 下天气模块有 GBK 编码修复逻辑，不要删除
-- 当前 `user_id` 写死在 `config/agent.yml` 中，不支持多用户登录，如需多用户需自行改造
+
