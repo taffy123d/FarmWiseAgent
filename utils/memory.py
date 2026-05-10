@@ -9,10 +9,13 @@ class ConversationMemory:
     def __init__(self):
         self._sessions: dict[str, list[dict]] = {}
 
-    def add_message(self, user_id: str, role: str, content: str):
+    def add_message(self, user_id: str, role: str, content: str, reasoning_content: str = None):
         if user_id not in self._sessions:
             self._sessions[user_id] = []
-        self._sessions[user_id].append({"role": role, "content": content})
+        msg = {"role": role, "content": content}
+        if reasoning_content:
+            msg["reasoning_content"] = reasoning_content
+        self._sessions[user_id].append(msg)
         self._trim_history(user_id)
 
     def get_history(self, user_id: str) -> list[dict]:

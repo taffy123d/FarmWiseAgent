@@ -84,18 +84,21 @@ async def chat(request: ChatRequest):
         messages = memory.get_history(user_id)
         agent = ReactAgent()
         full_reply = ""
+        reasoning_content = None
         try:
             for item in agent.execute_stream(messages):
                 data = json.dumps(item, ensure_ascii=False)
                 if item.get("type") == "final":
                     full_reply += item.get("chunk", "")
+                if item.get("reasoning_content"):
+                    reasoning_content = item["reasoning_content"]
                 yield f"data: {data}\n\n"
         except Exception as e:
             data = json.dumps({"type": "error", "chunk": str(e)}, ensure_ascii=False)
             yield f"data: {data}\n\n"
         finally:
             if full_reply:
-                memory.add_message(user_id, "assistant", full_reply)
+                memory.add_message(user_id, "assistant", full_reply, reasoning_content)
             data = json.dumps({"type": "done", "done": True}, ensure_ascii=False)
             yield f"data: {data}\n\n"
 

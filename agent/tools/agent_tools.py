@@ -10,17 +10,33 @@ from utils.logger_handler import logger
 import os
 from datetime import date
 from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.utilities.duckduckgo_search import DuckDuckGoSearchAPIWrapper
 
 
 # =========================================================================================================================
 
-ddsearch = DuckDuckGoSearchRun()
+_wrapped_ddsearch = DuckDuckGoSearchRun(
+    api_wrapper=DuckDuckGoSearchAPIWrapper(backend="bing")
+)
+
+@tool(description='''
+   - 核心能力：入参为query（检索词），在网上进行搜索并获取最新的相关资讯；
+   - 出参：字符串类型的搜索内容，包含与检索词匹配的搜索结果；
+   - 使用场景：当需要获取实时信息、新闻或补充网络资料时调用；
+   - 调用规则：必须传入纯文本字符串类型的query参数，搜索失败时返回"检索失败"。
+''')
+def ddsearch(query: str) -> str:
+    try:
+        return _wrapped_ddsearch.invoke(query)
+    except Exception:
+        return "检索失败"
 
 # =========================================================================================================================
 
 rag = RagSummarizeService()
 
 @tool(description='''
+  !!! 注意事项：资料库内并没有<特点城市>的农业资料，而是 “某个地理条件对应的信息”。请先根据当地气候地理条件等(可联网搜索这些信息)及当前天气，再将这些信息输入rag工具检索
    - 核心能力：入参为query（检索词），从向量库检索 农作物 专业知识，收割播种建议，病虫害防治等相关专业知识
    - 出参：字符串类型的专业资料内容，包含与检索词匹配的解答、建议及知识点；
    - 使用场景：当回答用户问题需要补充 农作物 的专业信息、现有常识无法精准解答时调用；

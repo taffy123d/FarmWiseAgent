@@ -28,3 +28,22 @@ class EmbeddingsFactory(BaseModelFactory):
 
 chat_model = ChatModelFactory().generator()
 embedding_model = EmbeddingsFactory().generator()
+
+# Monkey-patch: include reasoning_content in API requests for multi-turn conversations.
+# DeepSeek requires reasoning_content from previous assistant messages to be passed back,
+# but BaseChatOpenAI._convert_message_to_dict does not include it.
+_original_get_request_payload = chat_model._get_request_payload
+
+def _patched_get_request_payload(self, input_, *, stop=None, **kwargs):
+    payload = _original_get_request_payload(input_, stop=stop, **kwargs)
+    if hasattr(input_, '__iter__') and not isinstance(input_, (str, dict)):
+        payload_msgs = payload.get("messages", [])
+        for i, msg in enumerate(input_):
+            if (hasattr(msg, 'additional_kwargs')
+                    and msg.additional_kwargs.get("reasoning_content")
+                    and i < len(payload_msgs)
+                    and payload_msgs[i].get("role") == "assistant"):
+                payload_msgs[i]["reasoning_content"] = msg.additional_kwargs["reasoning_content"]
+    return payload
+
+chat_model._get_request_payload = _patched_get_request_payload.__get__(chat_model, type(chat_model))

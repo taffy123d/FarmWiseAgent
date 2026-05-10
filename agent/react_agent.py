@@ -27,10 +27,13 @@ class ReactAgent:
       latest_message = chunk['messages'][-1]
       if isinstance(latest_message, AIMessage) and latest_message.content:
         msg_type = "thinking" if getattr(latest_message, 'tool_calls', []) else "final"
-        yield {
+        item = {
           "type": msg_type,
           "chunk": latest_message.content.strip()+'\n'
         }
+        if latest_message.additional_kwargs.get("reasoning_content"):
+          item["reasoning_content"] = latest_message.additional_kwargs["reasoning_content"]
+        yield item
 
   def execute_invoke(self,messages:list[dict]) ->str :
     input_dict = {'messages': messages}
